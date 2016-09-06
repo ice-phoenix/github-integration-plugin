@@ -8,6 +8,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.github.pullrequest.GitHubPRMessage;
+import org.jenkinsci.plugins.github.pullrequest.GitHubPRTrigger;
 import org.jenkinsci.plugins.github.pullrequest.publishers.GitHubPRAbstractPublisher;
 import org.jenkinsci.plugins.github.pullrequest.utils.PublisherErrorHandler;
 import org.jenkinsci.plugins.github.pullrequest.utils.StatusVerifier;
@@ -19,6 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.jenkinsci.plugins.github.pullrequest.utils.JobHelper.triggerFrom;
+import static org.jenkinsci.plugins.github.pullrequest.utils.ObjectsUtil.isNull;
 
 /**
  * Adds specified text to comments after build.
@@ -50,26 +55,33 @@ public class GitHubPRCommentPublisher extends GitHubPRAbstractPublisher {
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
                         @Nonnull TaskListener listener) throws InterruptedException, IOException {
+
         if (getStatusVerifier() != null && !getStatusVerifier().isRunAllowed(run)) {
             return;
         }
 
-        //TODO is this check of Jenkins public url necessary?
-        //String publishedURL = getTriggerDescriptor().getPublishedURL();
-        //if (publishedURL != null && !publishedURL.isEmpty()) {
+        final String publishedURL = getTriggerDescriptor().getJenkinsURL();
 
-        //TODO are replaceMacros, makebuildMessage needed?
-        String message = comment.expandAll(run, listener);
+        if (isEmpty(publishedURL)) return;
 
-        // Only post the build's custom message if it has been set.
+        final int pullRequestNumber = getNumber(run);
+        final String message = comment.expandAll(run, listener);
+
+        final GitHubPRTrigger trigger = triggerFrom(run.getParent(), GitHubPRTrigger.class);
+        if (isNull(trigger)) {
+            listener.error("Couldn't get trigger for this run! Skipping...");
+            handlePublisherError(run);
+            return;
+        }
+
         if (message != null && !message.isEmpty()) {
             try {
-                getGhPullRequest(run).comment(message);
+                trigger.getRemoteRepo().getPullRequest(pullRequestNumber).comment(message);
             } catch (IOException ex) {
-                LOGGER.error("Couldn't add comment to pull request #{}: '{}'", getNumber(run), message, ex);
+                listener.error("Couldn't add comment to pull request #{}: '{}'", pullRequestNumber, message, ex);
                 handlePublisherError(run);
+                return;
             }
-            listener.getLogger().println(message);
         }
     }
 
