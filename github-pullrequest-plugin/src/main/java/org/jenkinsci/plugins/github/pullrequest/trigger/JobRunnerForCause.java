@@ -6,19 +6,7 @@ import com.google.common.base.Predicate;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
-import hudson.model.Action;
-import hudson.model.Cause;
-import hudson.model.CauseAction;
-import hudson.model.Computer;
-import hudson.model.Executor;
-import hudson.model.Job;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Queue;
-import hudson.model.Result;
-import hudson.model.Run;
+import hudson.model.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
@@ -42,22 +30,7 @@ import static com.cloudbees.jenkins.GitHubWebHook.getJenkinsInstance;
 import static com.google.common.base.Predicates.instanceOf;
 import static hudson.security.ACL.impersonate;
 import static java.util.Arrays.asList;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.AUTHOR_EMAIL;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.CAUSE_SKIP;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.COMMIT_AUTHOR_EMAIL;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.COMMIT_AUTHOR_NAME;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.COND_REF;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.HEAD_SHA;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.NUMBER;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.SHORT_DESC;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.SOURCE_BRANCH;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.SOURCE_REPO_OWNER;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.STATE;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.TARGET_BRANCH;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.TITLE;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.TRIGGER_SENDER_AUTHOR;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.TRIGGER_SENDER_EMAIL;
-import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.URL;
+import static org.jenkinsci.plugins.github.pullrequest.data.GitHubPREnv.*;
 import static org.jenkinsci.plugins.github.pullrequest.utils.JobHelper.getInterruptCauses;
 import static org.jenkinsci.plugins.github.pullrequest.utils.JobHelper.getInterruptStatus;
 import static org.jenkinsci.plugins.github.pullrequest.utils.ObjectsUtil.isNull;
@@ -126,19 +99,19 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
                     Collection<? extends MatrixConfiguration> configs = ((MatrixProject) job).getActiveConfigurations();
                     for (MatrixConfiguration config : configs) {
                         trigger.getRemoteRepo()
-                                .createCommitStatus(cause.getHeadSha(),
-                                        GHCommitState.PENDING,
-                                        config.getAbsoluteUrl(),
-                                        sb.toString(),
-                                        config.getFullName());
+                               .createCommitStatus(cause.getHeadSha(),
+                                                   GHCommitState.PENDING,
+                                                   config.getAbsoluteUrl(),
+                                                   sb.toString(),
+                                                   config.getFullName());
                     }
                 } else {
                     trigger.getRemoteRepo()
-                            .createCommitStatus(cause.getHeadSha(),
-                                    GHCommitState.PENDING,
-                                    job.getAbsoluteUrl(),
-                                    sb.toString(),
-                                    job.getFullName());
+                           .createCommitStatus(cause.getHeadSha(),
+                                               GHCommitState.PENDING,
+                                               job.getAbsoluteUrl(),
+                                               sb.toString(),
+                                               job.getFullName());
                 }
             }
         } catch (IOException e) {
@@ -164,7 +137,7 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
 
             for (Executor executor : executors) {
                 if (isNull(executor) || !executor.isBusy() || nonNull(executor.getCauseOfDeath()) ||
-                        !getInterruptCauses(executor).isEmpty() || getInterruptStatus(executor) == Result.ABORTED) {
+                    !getInterruptCauses(executor).isEmpty() || getInterruptStatus(executor) == Result.ABORTED) {
                     continue;
                 }
 
@@ -267,7 +240,8 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
                 COMMIT_AUTHOR_EMAIL.param(cause.getCommitAuthorEmail()),
                 TARGET_BRANCH.param(cause.getTargetBranch()),
                 SOURCE_BRANCH.param(cause.getSourceBranch()),
-                AUTHOR_EMAIL.param(cause.getPRAuthorEmail()),
+                AUTHOR_NAME.param(cause.getPrAuthorName()),
+                AUTHOR_EMAIL.param(cause.getPrAuthorEmail()),
                 SHORT_DESC.param(cause.getShortDescription()),
                 TITLE.param(cause.getTitle()),
                 URL.param(cause.getHtmlUrl().toString()),
@@ -293,7 +267,7 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
         }
 
         return parameterizedJobMixIn.scheduleBuild2(quietPeriod, new CauseAction(cause), new ParametersAction(values),
-                gitHubPRBadgeAction);
+                                                    gitHubPRBadgeAction);
     }
 
     /**

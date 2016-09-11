@@ -16,6 +16,7 @@ public enum GitHubPREnv {
     COMMIT_AUTHOR_EMAIL,
     TARGET_BRANCH,
     SOURCE_BRANCH,
+    AUTHOR_NAME,
     AUTHOR_EMAIL,
     SHORT_DESC,
     TITLE,

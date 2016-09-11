@@ -32,6 +32,7 @@ public class GitHubPRCause extends Cause {
     private boolean mergeable;
     private String targetBranch;
     private String sourceBranch;
+    private String prAuthorName;
     private String prAuthorEmail;
     @CheckForNull
     private String title;
@@ -66,27 +67,51 @@ public class GitHubPRCause extends Cause {
                          GHUser triggerSender,
                          boolean skip,
                          String reason) throws IOException {
-        this(pr.getHeadSha(), pr.getNumber(),
-                pr.isMergeable(), pr.getBaseRef(), pr.getHeadRef(),
-                pr.getUserEmail(), pr.getTitle(), pr.getHtmlUrl(), pr.getSourceRepoOwner(),
-                pr.getLabels(),
-                triggerSender, skip, reason, "", "", pr.getState());
+        this(pr.getHeadSha(),
+             pr.getNumber(),
+             pr.isMergeable(),
+             pr.getBaseRef(),
+             pr.getHeadRef(),
+             pr.getUserLogin(),
+             pr.getUserEmail(),
+             pr.getTitle(),
+             pr.getHtmlUrl(),
+             pr.getSourceRepoOwner(),
+             pr.getLabels(),
+             triggerSender,
+             skip,
+             reason,
+             "",
+             "",
+             pr.getState());
     }
 
     //FIXME (sizes) ParameterNumber: More than 7 parameters (found 15).
     //CHECKSTYLE:OFF
-    public GitHubPRCause(String headSha, int number, boolean mergeable,
-                         String targetBranch, String sourceBranch, String prAuthorEmail,
-                         String title, URL htmlUrl, String sourceRepoOwner, Set<String> labels,
-                         GHUser triggerSender, boolean skip, String reason,
-                         String commitAuthorName, String commitAuthorEmail,
+    public GitHubPRCause(String headSha,
+                         int number,
+                         boolean mergeable,
+                         String targetBranch,
+                         String sourceBranch,
+                         String prAuthorName,
+                         String prAuthorEmail,
+                         String title,
+                         URL htmlUrl,
+                         String sourceRepoOwner,
+                         Set<String> labels,
+                         GHUser triggerSender,
+                         boolean skip,
+                         String reason,
+                         String commitAuthorName,
+                         String commitAuthorEmail,
                          String state) {
-    //CHECKSTYLE:ON
+        //CHECKSTYLE:ON
         this.headSha = headSha;
         this.number = number;
         this.mergeable = mergeable;
         this.targetBranch = targetBranch;
         this.sourceBranch = sourceBranch;
+        this.prAuthorName = prAuthorName;
         this.prAuthorEmail = prAuthorEmail;
         this.title = title;
         this.htmlUrl = htmlUrl;
@@ -239,6 +264,7 @@ public class GitHubPRCause extends Cause {
         this.commitAuthorEmail = commitAuthorEmail;
         return this;
     }
+
     /**
      * @see #state
      */
@@ -309,10 +335,6 @@ public class GitHubPRCause extends Cause {
         return sourceBranch;
     }
 
-    public String getPRAuthorEmail() {
-        return prAuthorEmail;
-    }
-
     // for printing PR url on left builds panel (build description)
     public URL getHtmlUrl() {
         return htmlUrl;
@@ -356,6 +378,10 @@ public class GitHubPRCause extends Cause {
      */
     public String getAbbreviatedTitle() {
         return StringUtils.abbreviate(getTitle(), 30);
+    }
+
+    public String getPrAuthorName() {
+        return prAuthorName;
     }
 
     public String getPrAuthorEmail() {
