@@ -49,6 +49,8 @@ public class GitHubPRCause extends Cause {
     private String commitAuthorName;
     private String commitAuthorEmail;
 
+    private String comment;
+
     private boolean skip;
     private String condRef;
     private String pollingLog;
@@ -68,22 +70,23 @@ public class GitHubPRCause extends Cause {
                          boolean skip,
                          String reason) throws IOException {
         this(pr.getHeadSha(),
-             pr.getNumber(),
-             pr.isMergeable(),
-             pr.getBaseRef(),
-             pr.getHeadRef(),
-             pr.getUserLogin(),
-             pr.getUserEmail(),
-             pr.getTitle(),
-             pr.getHtmlUrl(),
-             pr.getSourceRepoOwner(),
-             pr.getLabels(),
-             triggerSender,
-             skip,
-             reason,
-             "",
-             "",
-             pr.getState());
+                pr.getNumber(),
+                pr.isMergeable(),
+                pr.getBaseRef(),
+                pr.getHeadRef(),
+                pr.getUserLogin(),
+                pr.getUserEmail(),
+                pr.getTitle(),
+                pr.getHtmlUrl(),
+                pr.getSourceRepoOwner(),
+                pr.getLabels(),
+                triggerSender,
+                skip,
+                reason,
+                "",
+                "",
+                pr.getLastComment(),
+                pr.getState());
     }
 
     //FIXME (sizes) ParameterNumber: More than 7 parameters (found 15).
@@ -104,6 +107,7 @@ public class GitHubPRCause extends Cause {
                          String reason,
                          String commitAuthorName,
                          String commitAuthorEmail,
+                         String comment,
                          String state) {
         //CHECKSTYLE:ON
         this.headSha = headSha;
@@ -121,6 +125,7 @@ public class GitHubPRCause extends Cause {
         this.reason = reason;
         this.commitAuthorName = commitAuthorName;
         this.commitAuthorEmail = commitAuthorEmail;
+        this.comment = comment;
 
         if (nonNull(triggerSender)) {
             try {
@@ -394,6 +399,10 @@ public class GitHubPRCause extends Cause {
 
     public String getCommitAuthorEmail() {
         return commitAuthorEmail;
+    }
+
+    public String getComment() {
+        return comment;
     }
 
     public String getState() {

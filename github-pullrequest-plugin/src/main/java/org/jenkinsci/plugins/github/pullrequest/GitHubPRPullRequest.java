@@ -45,6 +45,7 @@ public class GitHubPRPullRequest {
     private Set<String> labels;
     @CheckForNull
     private Date lastCommentCreatedAt;
+    private String lastComment;
     private String sourceRepoOwner;
     private String state;
 
@@ -64,15 +65,19 @@ public class GitHubPRPullRequest {
 
         try {
             Date maxDate = new Date(0);
+            String lastCommentCandidate = null;
             for (GHIssueComment comment : pr.getComments()) {
                 if (comment.getCreatedAt().compareTo(maxDate) > 0) {
                     maxDate = comment.getCreatedAt();
+                    lastCommentCandidate = comment.getBody();
                 }
             }
             lastCommentCreatedAt = maxDate.getTime() == 0 ? null : new Date(maxDate.getTime());
+            lastComment = lastCommentCandidate;
         } catch (IOException e) {
             LOGGER.warn("Can't get comments for PR: {}", e.getMessage());
             lastCommentCreatedAt = null;
+            lastComment = null;
         }
 
         try {
@@ -137,6 +142,10 @@ public class GitHubPRPullRequest {
     @CheckForNull
     public Date getLastCommentCreatedAt() {
         return lastCommentCreatedAt;
+    }
+
+    public String getLastComment() {
+        return lastComment;
     }
 
     /**

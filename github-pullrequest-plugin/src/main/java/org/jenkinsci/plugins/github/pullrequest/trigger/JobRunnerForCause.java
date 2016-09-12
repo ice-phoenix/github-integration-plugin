@@ -99,19 +99,19 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
                     Collection<? extends MatrixConfiguration> configs = ((MatrixProject) job).getActiveConfigurations();
                     for (MatrixConfiguration config : configs) {
                         trigger.getRemoteRepo()
-                               .createCommitStatus(cause.getHeadSha(),
-                                                   GHCommitState.PENDING,
-                                                   config.getAbsoluteUrl(),
-                                                   sb.toString(),
-                                                   config.getFullName());
+                                .createCommitStatus(cause.getHeadSha(),
+                                        GHCommitState.PENDING,
+                                        config.getAbsoluteUrl(),
+                                        sb.toString(),
+                                        config.getFullName());
                     }
                 } else {
                     trigger.getRemoteRepo()
-                           .createCommitStatus(cause.getHeadSha(),
-                                               GHCommitState.PENDING,
-                                               job.getAbsoluteUrl(),
-                                               sb.toString(),
-                                               job.getFullName());
+                            .createCommitStatus(cause.getHeadSha(),
+                                    GHCommitState.PENDING,
+                                    job.getAbsoluteUrl(),
+                                    sb.toString(),
+                                    job.getFullName());
                 }
             }
         } catch (IOException e) {
@@ -137,7 +137,7 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
 
             for (Executor executor : executors) {
                 if (isNull(executor) || !executor.isBusy() || nonNull(executor.getCauseOfDeath()) ||
-                    !getInterruptCauses(executor).isEmpty() || getInterruptStatus(executor) == Result.ABORTED) {
+                        !getInterruptCauses(executor).isEmpty() || getInterruptStatus(executor) == Result.ABORTED) {
                     continue;
                 }
 
@@ -238,6 +238,7 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
                 TRIGGER_SENDER_EMAIL.param(cause.getTriggerSenderEmail()),
                 COMMIT_AUTHOR_NAME.param(cause.getCommitAuthorName()),
                 COMMIT_AUTHOR_EMAIL.param(cause.getCommitAuthorEmail()),
+                LAST_COMMENT.param(cause.getComment()),
                 TARGET_BRANCH.param(cause.getTargetBranch()),
                 SOURCE_BRANCH.param(cause.getSourceBranch()),
                 AUTHOR_NAME.param(cause.getPrAuthorName()),
@@ -267,7 +268,7 @@ public class JobRunnerForCause implements Predicate<GitHubPRCause> {
         }
 
         return parameterizedJobMixIn.scheduleBuild2(quietPeriod, new CauseAction(cause), new ParametersAction(values),
-                                                    gitHubPRBadgeAction);
+                gitHubPRBadgeAction);
     }
 
     /**
